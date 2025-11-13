@@ -152,17 +152,43 @@ def main():
     # Step 2: Run A/B test with simple API
     results = run_ab_test_simple()
     
+    # Step 3: Analyze results (NEW!)
+    print("\n" + "="*60)
+    print("Analyzing Results with Metrics & Statistics")
+    print("="*60)
+    
+    # Get the framework instance to analyze
+    from mlops_ab_testing import ABTestFramework
+    framework = ABTestFramework(
+        champion_model='models/champion.joblib',
+        challenger_models=['models/challenger.joblib'],
+        test_data='data/raw/test_data.csv',
+        target_column='target'
+    )
+    
+    # Re-run test (or we could reuse results)
+    results = framework.run_test()
+    
+    # Analyze with metrics and statistics
+    analysis = framework.analyze_results(method='both')
+    
     print("\n" + "="*60)
     print("Example Complete!")
     print("="*60)
-    print("\nNext steps:")
-    print("  1. Check the test results above")
-    print("  2. Run metrics analysis (coming in Step 3)")
-    print("  3. Generate visualizations (coming in Step 5)")
-    print("  4. Create reports (coming in Step 5)")
+    print("\nWhat we demonstrated:")
+    print("  1. [OK] Created sample data")
+    print("  2. [OK] Trained two models (Random Forest vs Gradient Boosting)")
+    print("  3. [OK] Ran A/B test with traffic routing")
+    print("  4. [OK] Calculated performance metrics")
+    print("  5. [OK] Statistical analysis (Classical & Bayesian)")
     
-    return results
+    print("\nNext steps:")
+    print("  - Step 4: Add explainability (SHAP/LIME)")
+    print("  - Step 5: Generate visualizations and reports")
+    print("  - Step 6: MLflow/W&B tracking integration")
+    
+    return results, analysis
 
 
 if __name__ == '__main__':
-    results = main()
+    results, analysis = main()

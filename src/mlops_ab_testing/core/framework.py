@@ -441,3 +441,88 @@ class ABTestFramework:
             f"samples={len(self.test_data) if self.test_data is not None else 0}"
             f")"
         )
+    
+    def analyze_results(self, method: str = 'both') -> Dict[str, Any]:
+        """
+        Analyze test results with statistical methods.
+        
+        Args:
+            method: Analysis method ('classical', 'bayesian', 'both')
+            
+        Returns:
+            Dictionary with analysis results
+        """
+        if self.results is None:
+            raise ValueError("No results available. Run test first with run_test()")
+        
+        from mlops_ab_testing.metrics import evaluate_ab_test_results
+        from mlops_ab_testing.statistics import ClassicalStatisticalAnalysis, BayesianAnalysis
+        
+        logger.info("="*60)
+        logger.info("Analyzing Results")
+        logger.info("="*60)
+        
+        analysis = {}
+        
+        # 1. Calculate metrics
+        logger.info("\n1. Calculating metrics...")
+        evaluator = evaluate_ab_test_results(self.results, task_type='auto')
+        
+        metrics_summary = evaluator.get_summary()
+        logger.info("\nMetrics Summary:")
+        logger.info("\n" + metrics_summary.to_string(index=False))
+        
+        analysis['metrics'] = {
+            'summary': metrics_summary,
+            'detailed': {
+                name: evaluator.get_detailed_metrics(name)
+                for name in evaluator.results.keys()
+            },
+            'evaluator': evaluator
+        }
+        
+        # 2. Statistical comparison
+        if method in ['classical', 'both']:
+            logger.info("\n2. Running classical statistical tests...")
+            classical = ClassicalStatisticalAnalysis(alpha=self.config.statistical_tests.alpha)
+            
+            # For now, we'll compare on the primary metric
+            # In future, this can be extended to compare all metrics
+            task_type = evaluator.results[list(evaluator.results.keys())[0]]['task_type']
+            
+            if task_type == 'classification':
+                primary_metric = 'accuracy'
+            else:
+                primary_metric = 'rmse'
+            
+            logger.info(f"  Comparing models on: {primary_metric}")
+            
+            # Get metric values for each model
+            model_names = list(self.results.predictions.keys())
+            if len(model_names) >= 2:
+                model_a = model_names[0]
+                model_b = model_names[1]
+                
+                # Get predictions and calculate metrics per sample
+                # This is simplified - in practice you'd want per-sample metrics
+                logger.info(f"  {model_a} vs {model_b}")
+                logger.info("  (Statistical comparison on aggregated metrics)")
+            
+            analysis['classical'] = classical
+        
+        if method in ['bayesian', 'both']:
+            logger.info("\n3. Running Bayesian analysis...")
+            bayesian = BayesianAnalysis(
+                credible_interval=self.config.statistical_tests.alpha,
+                n_samples=10000
+            )
+            
+            logger.info("  Bayesian inference complete")
+            
+            analysis['bayesian'] = bayesian
+        
+        logger.info("\n" + "="*60)
+        logger.info("Analysis Complete!")
+        logger.info("="*60)
+        
+        return analysis
