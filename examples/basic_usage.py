@@ -43,7 +43,7 @@ def create_sample_data():
     
     # Save test data
     test_df.to_csv('data/raw/test_data.csv', index=False)
-    print(f"✓ Saved test data: {len(test_df)} samples")
+    print(f"[OK] Saved test data: {len(test_df)} samples")
     
     return train_df, test_df
 
@@ -65,8 +65,10 @@ def train_models(train_df):
         random_state=42
     )
     champion.fit(X_train, y_train)
-    joblib.dump(champion, 'models/champion.pkl')
-    print(f"  ✓ Champion accuracy: {champion.score(X_train, y_train):.3f}")
+    
+    # Save with joblib for better compatibility
+    joblib.dump(champion, 'models/champion.joblib')
+    print(f"  [OK] Champion accuracy: {champion.score(X_train, y_train):.3f}")
     
     # Train challenger model (Gradient Boosting)
     print("  Training challenger (Gradient Boosting)...")
@@ -76,8 +78,10 @@ def train_models(train_df):
         random_state=42
     )
     challenger.fit(X_train, y_train)
-    joblib.dump(challenger, 'models/challenger.pkl')
-    print(f"  ✓ Challenger accuracy: {challenger.score(X_train, y_train):.3f}")
+    
+    # Save with joblib for better compatibility
+    joblib.dump(challenger, 'models/challenger.joblib')
+    print(f"  [OK] Challenger accuracy: {challenger.score(X_train, y_train):.3f}")
     
     return champion, challenger
 
@@ -90,8 +94,8 @@ def run_ab_test_simple():
     
     # Initialize framework with simple parameters
     framework = ABTestFramework(
-        champion_model='models/champion.pkl',
-        challenger_models=['models/challenger.pkl'],
+        champion_model='models/champion.joblib',
+        challenger_models=['models/challenger.joblib'],
         test_data='data/raw/test_data.csv',
         target_column='target'
     )

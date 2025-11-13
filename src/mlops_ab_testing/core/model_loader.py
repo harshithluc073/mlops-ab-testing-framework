@@ -100,8 +100,14 @@ class ModelLoader:
             if extension == '.joblib':
                 model = joblib.load(model_path)
             else:
+                # Try pickle with different protocols for compatibility
                 with open(model_path, 'rb') as f:
-                    model = pickle.load(f)
+                    try:
+                        model = pickle.load(f)
+                    except (pickle.UnpicklingError, AttributeError, ModuleNotFoundError) as e:
+                        # If pickle fails, try joblib as fallback
+                        logger.warning(f"Pickle load failed, trying joblib: {str(e)}")
+                        model = joblib.load(model_path)
             
             # Verify it has predict method
             if not hasattr(model, 'predict'):

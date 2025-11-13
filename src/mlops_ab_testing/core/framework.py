@@ -245,10 +245,10 @@ class ABTestFramework:
                     model_name=model_name
                 )
                 self.models[model_name] = model
-                logger.info(f"✓ Loaded {model_name}: {model_config.path}")
+                logger.info(f"[OK] Loaded {model_name}: {model_config.path}")
                 
             except Exception as e:
-                logger.error(f"✗ Failed to load {model_name}: {str(e)}")
+                logger.error(f"[FAILED] Failed to load {model_name}: {str(e)}")
                 raise
         
         logger.info(f"Successfully loaded {len(self.models)} models")
@@ -289,7 +289,7 @@ class ABTestFramework:
         """Setup traffic router based on configuration."""
         logger.info("Setting up traffic router...")
         self.router = create_router_from_config(self.config)
-        logger.info(f"✓ Router configured with strategy: {self.config.routing.strategy}")
+        logger.info(f"[OK] Router configured with strategy: {self.config.routing.strategy}")
     
     def run_test(self) -> ABTestResults:
         """
@@ -376,8 +376,8 @@ class ABTestFramework:
                 sample_indices=sample_indices
             )
             
-            logger.info(f"  ✓ {len(preds)} predictions")
-            logger.info(f"  ✓ Latency: {latency*1000:.2f}ms")
+            logger.info(f"  [OK] {len(preds)} predictions")
+            logger.info(f"  [OK] Latency: {latency*1000:.2f}ms")
         
         # Step 7: Create results object
         end_time = time.time()
