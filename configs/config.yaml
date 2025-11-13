@@ -1,0 +1,215 @@
+# MLOps A/B Testing Framework - Configuration Example
+
+experiment:
+  name: "model_comparison_experiment"
+  description: "Testing new model version against production champion"
+  tags:
+    - "production"
+    - "version_comparison"
+  random_seed: 42
+
+# Model Configuration
+models:
+  champion:
+    path: "models/champion_model.pkl"
+    name: "champion_v1.0"
+    version: "1.0.0"
+  
+  challengers:
+    - path: "models/challenger_model_v2.pkl"
+      name: "challenger_v2.0"
+      version: "2.0.0"
+
+# Data Configuration
+data:
+  test_data_path: "data/test_dataset.csv"
+  target_column: "target"
+  feature_columns: null  # null means all columns except target
+  stratify_column: null  # Column for stratified sampling
+  sample_size: null  # null means use all data
+
+# Traffic Routing Configuration
+routing:
+  strategy: "equal"  # Options: equal, stratified, weighted, custom
+  traffic_split:
+    champion: 0.5
+    challenger_v2.0: 0.5
+  
+  # For stratified routing
+  stratify_by: null  # Column name for stratification
+  
+  # For custom routing (optional)
+  custom_router: null  # Path to custom router function
+
+# Metrics Configuration
+metrics:
+  # Classification metrics
+  classification:
+    - "accuracy"
+    - "precision"
+    - "recall"
+    - "f1_score"
+    - "roc_auc"
+    - "log_loss"
+    - "confusion_matrix"
+  
+  # Regression metrics
+  regression:
+    - "mse"
+    - "rmse"
+    - "mae"
+    - "r2_score"
+    - "mape"
+  
+  # Custom metrics (optional)
+  custom:
+    []
+    # Example:
+    # - name: "business_metric"
+    #   function: "path.to.module.custom_metric"
+    #   params:
+    #     threshold: 0.5
+
+# Statistical Analysis Configuration
+statistical_tests:
+  alpha: 0.05  # Significance level
+  method: "both"  # Options: classical, bayesian, both
+  
+  # Classical tests
+  classical:
+    tests:
+      - "t_test"
+      - "chi_square"
+      - "mann_whitney"
+    correction: "bonferroni"  # Multiple testing correction
+  
+  # Bayesian analysis
+  bayesian:
+    prior: "uniform"  # Options: uniform, normal, beta
+    credible_interval: 0.95
+    samples: 10000
+
+# Explainability Configuration
+explainability:
+  enabled: true
+  methods:
+    - "shap"
+    - "lime"  # Optional, requires lime package
+  
+  shap:
+    explainer_type: "tree"  # Options: tree, kernel, linear, deep
+    sample_size: 100  # Number of samples for SHAP calculation
+    plot_types:
+      - "summary"
+      - "dependence"
+      - "force"
+  
+  lime:
+    sample_size: 100
+    num_features: 10
+
+# Latency and Performance Configuration
+performance:
+  measure_latency: true
+  latency_percentiles:
+    - 50
+    - 95
+    - 99
+  warmup_iterations: 10
+  timing_iterations: 100
+
+# Visualization Configuration
+visualization:
+  enabled: true
+  formats:
+    - "png"
+    - "html"
+  plots:
+    - "roc_curve"
+    - "precision_recall_curve"
+    - "confusion_matrix"
+    - "feature_importance"
+    - "prediction_distribution"
+    - "latency_comparison"
+  style: "seaborn"  # Options: seaborn, ggplot, default
+  color_palette: "Set2"
+
+# Reporting Configuration
+reporting:
+  enabled: true
+  formats:
+    - "html"
+    - "markdown"
+    - "json"
+  output_dir: "reports"
+  
+  sections:
+    - "executive_summary"
+    - "statistical_analysis"
+    - "performance_metrics"
+    - "visualizations"
+    - "explainability"
+    - "recommendations"
+  
+  include_raw_data: false
+  include_model_details: true
+
+# Experiment Tracking Configuration
+tracking:
+  enabled: true
+  backend: "mlflow"  # Options: mlflow, wandb, both
+  
+  mlflow:
+    tracking_uri: "http://localhost:5000"
+    experiment_name: "model_ab_testing"
+    artifact_location: "mlruns"
+    log_models: true
+  
+  wandb:
+    project: "mlops-ab-testing"
+    entity: null  # Your W&B username or team
+    tags: ["ab-test", "production"]
+
+# CI/CD Configuration
+cicd:
+  enabled: false
+  fail_on_regression: true
+  regression_threshold: 0.05  # 5% performance drop
+  
+  github_actions:
+    upload_reports: true
+    comment_on_pr: true
+  
+  notifications:
+    slack_webhook: null
+    email: null
+
+# Logging Configuration
+logging:
+  level: "INFO"  # Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  log_file: "logs/ab_testing.log"
+  console_output: true
+
+# Advanced Configuration
+advanced:
+  # Temporal drift simulation
+  temporal_drift:
+    enabled: false
+    drift_type: "gradual"  # Options: gradual, sudden, seasonal
+    drift_magnitude: 0.1
+  
+  # Parallel processing
+  parallel:
+    enabled: false
+    n_jobs: -1  # -1 means use all available cores
+  
+  # Caching
+  cache:
+    enabled: true
+    cache_dir: ".cache"
+  
+  # Memory management
+  memory:
+    max_memory_mb: 4096
+    chunk_size: 10000  # For processing large datasets

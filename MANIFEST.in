@@ -1,0 +1,9 @@
+include README.md
+include LICENSE
+include CONTRIBUTING.md
+include requirements.txt
+include requirements-dev.txt
+recursive-include configs *.yaml
+recursive-include src/mlops_ab_testing/templates *.html *.jinja2
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
