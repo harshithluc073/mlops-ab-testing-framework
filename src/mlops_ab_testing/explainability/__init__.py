@@ -23,6 +23,13 @@ from mlops_ab_testing.explainability.lime_explainer import (
     explain_model_with_lime,
     compare_lime_explanations
 )
+from mlops_ab_testing.explainability.comparison import (
+    FeatureComparator,
+    analyze_feature_stability,
+    get_consensus_features,
+    create_importance_matrix,
+    summarize_comparison
+)
 
 __all__ = [
     'BaseExplainer',
@@ -37,4 +44,9 @@ __all__ = [
     'LIMEExplainer',
     'explain_model_with_lime',
     'compare_lime_explanations',
+    'FeatureComparator',
+    'analyze_feature_stability',
+    'get_consensus_features',
+    'create_importance_matrix',
+    'summarize_comparison',
 ]
