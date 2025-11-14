@@ -139,6 +139,12 @@ class SHAPExplainer(BaseExplainer):
         X = self._validate_data(X)
         feature_names = self._get_feature_names(X)
         
+        # Ensure feature_names is a proper list for indexing
+        if isinstance(feature_names, np.ndarray):
+            feature_names = feature_names.tolist()
+        elif not isinstance(feature_names, list):
+            feature_names = list(feature_names)
+        
         # Initialize explainer if needed
         self._initialize_explainer(X)
         
@@ -159,17 +165,32 @@ class SHAPExplainer(BaseExplainer):
             raise
         
         # Handle multi-class output
+        # SHAP can return: list of arrays (old), or single array with shape (n, features) or (n, features, classes)
         if isinstance(shap_values, list):
-            # For multi-class, take the first class or average
+            # Old SHAP format: list of arrays, one per class
+            # Use the first class for feature importance
             shap_values = shap_values[0] if len(shap_values) > 0 else shap_values
+        
+        # Check if we have 3D array (samples, features, classes)
+        if isinstance(shap_values, np.ndarray) and shap_values.ndim == 3:
+            # For binary classification, take the second class (positive class)
+            # Shape: (n_samples, n_features, n_classes) -> (n_samples, n_features)
+            shap_values = shap_values[:, :, -1]  # Take last class (positive class)
         
         # Calculate mean absolute SHAP values (global importance)
         mean_abs_shap = np.mean(np.abs(shap_values), axis=0)
         
+        # Ensure it's 1D
+        if mean_abs_shap.ndim > 1:
+            mean_abs_shap = mean_abs_shap.flatten()
+        
         # Sort features by importance
         sorted_idx = np.argsort(mean_abs_shap)[::-1]
         
-        logger.info(f"Top 5 features: {[feature_names[i] for i in sorted_idx[:5]]}")
+        # Get top 5 feature names - properly convert indices
+        top_5_indices = sorted_idx[:5]
+        top_5_names = [feature_names[int(idx)] for idx in top_5_indices]
+        logger.info(f"Top 5 features: {top_5_names}")
         
         return {
             'shap_values': shap_values,
@@ -216,6 +237,11 @@ class SHAPExplainer(BaseExplainer):
         if isinstance(shap_values, list):
             shap_values = shap_values[0]
         
+        # Check if we have 3D array (samples, features, classes)
+        if isinstance(shap_values, np.ndarray) and shap_values.ndim == 3:
+            # For binary classification, take the positive class
+            shap_values = shap_values[:, :, -1]
+        
         return {
             'shap_values': shap_values,
             'feature_names': feature_names,
@@ -249,14 +275,28 @@ class SHAPExplainer(BaseExplainer):
         else:
             explanation = self.explain_local(X)
         
+        # Handle expected_value - could be scalar or array
+        expected_value = explanation.get('expected_value')
+        if expected_value is not None:
+            # If it's an array (multi-class), take the first value or mean
+            if isinstance(expected_value, (list, np.ndarray)):
+                if len(expected_value) > 0:
+                    expected_value = float(expected_value[0])
+                else:
+                    expected_value = 0.0
+            else:
+                expected_value = float(expected_value)
+            base_values = np.full(len(X), expected_value)
+        else:
+            base_values = None
+        
         result = ExplanationResult(
             method='shap',
             model_name=model_name,
             feature_names=explanation['feature_names'],
             feature_importance=explanation.get('feature_importance'),
             shap_values=explanation['shap_values'],
-            base_values=np.full(len(X), explanation.get('expected_value', 0)) 
-                if explanation.get('expected_value') is not None else None,
+            base_values=base_values,
             data=explanation['data'],
             metadata={
                 'explainer_type': self.explainer_type,

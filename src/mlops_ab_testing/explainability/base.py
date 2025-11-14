@@ -240,16 +240,24 @@ class ExplanationResult:
         if self.feature_importance is None:
             raise ValueError("No feature importance available")
         
+        # Ensure feature_importance is 1D
+        feature_importance = self.feature_importance
+        if feature_importance.ndim > 1:
+            feature_importance = feature_importance.flatten()
+        
         # Get absolute importance
-        abs_importance = np.abs(self.feature_importance)
+        abs_importance = np.abs(feature_importance)
         
         # Get top N indices
         top_indices = np.argsort(abs_importance)[-n:][::-1]
         
+        # Convert to Python list for safe indexing
+        top_indices_list = [int(idx) for idx in top_indices]
+        
         df = pd.DataFrame({
-            'Feature': [self.feature_names[i] for i in top_indices],
-            'Importance': self.feature_importance[top_indices],
-            'Abs_Importance': abs_importance[top_indices]
+            'Feature': [self.feature_names[i] for i in top_indices_list],
+            'Importance': [feature_importance[i] for i in top_indices_list],
+            'Abs_Importance': [abs_importance[i] for i in top_indices_list]
         })
         
         return df
