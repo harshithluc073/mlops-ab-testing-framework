@@ -13,6 +13,11 @@ from mlops_ab_testing.explainability.base import (
     aggregate_explanations,
     compare_feature_importance
 )
+from mlops_ab_testing.explainability.shap_explainer import (
+    SHAPExplainer,
+    explain_model_with_shap,
+    compare_shap_explanations
+)
 
 __all__ = [
     'BaseExplainer',
@@ -21,4 +26,7 @@ __all__ = [
     'get_sample_indices',
     'aggregate_explanations',
     'compare_feature_importance',
+    'SHAPExplainer',
+    'explain_model_with_shap',
+    'compare_shap_explanations',
 ]
