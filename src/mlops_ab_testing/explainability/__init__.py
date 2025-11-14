@@ -18,6 +18,11 @@ from mlops_ab_testing.explainability.shap_explainer import (
     explain_model_with_shap,
     compare_shap_explanations
 )
+from mlops_ab_testing.explainability.lime_explainer import (
+    LIMEExplainer,
+    explain_model_with_lime,
+    compare_lime_explanations
+)
 
 __all__ = [
     'BaseExplainer',
@@ -29,4 +34,7 @@ __all__ = [
     'SHAPExplainer',
     'explain_model_with_shap',
     'compare_shap_explanations',
+    'LIMEExplainer',
+    'explain_model_with_lime',
+    'compare_lime_explanations',
 ]
